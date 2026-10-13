@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_nest_db
+    environment:
+      POSTGRES_USER: admin-drivo
+      POSTGRES_PASSWORD: drivo141225
+      POSTGRES_DB: drivo-garage
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  pgdata:
