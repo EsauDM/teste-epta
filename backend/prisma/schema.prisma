@@ -27,9 +27,9 @@ model Vehicles {
   vehicle_type String
   nickname String?
   picture String?
-  plate String
+  plate String @unique
   chassi String
-  renavam String
+  renavam String @unique
 
   userId Int
   owner User @relation(fields: [userId], references:[id])

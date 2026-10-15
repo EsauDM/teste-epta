@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumberString, IsOptional } from "class-validator";
+import { IsNotEmpty, IsNumberString, IsOptional, Length } from "class-validator";
 
 export class VehiclesDTO {
 
@@ -58,7 +58,8 @@ export class VehiclesDTO {
     example: "00123456789",
   })
   @IsNotEmpty()
-  @IsNumberString()
+  @IsNumberString({}, { message: 'O Renavam deve conter apenas números' })
+  @Length(11, 11, { message: 'O Renavam deve ter exatamente 11 números' })
   renavam: string;
 
   @ApiProperty({
