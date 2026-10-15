@@ -13,14 +13,15 @@ model User {
   email String @unique
   password String
   vehicles Vehicles[]
+  refreshTokens RefreshToken[]
 }
 
 model Vehicles {
   id Int @id @default(autoincrement())
   label String
   model String
-  year_of_fabrication DateTime
-  model_year DateTime
+  year_of_fabrication Int
+  model_year Int
   color String
   fuel_type String
   vehicle_type String
@@ -32,4 +33,13 @@ model Vehicles {
 
   userId Int
   owner User @relation(fields: [userId], references:[id])
+}
+
+model RefreshToken {
+  id Int @id @default(autoincrement())
+  hashedToken String @unique
+  userId Int
+  user User @relation(fields: [userId], references:[id], onDelete: Cascade )
+  expiresAT DateTime
+  createdAT DateTime @default(now())
 }

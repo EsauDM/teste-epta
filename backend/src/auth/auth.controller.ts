@@ -5,6 +5,7 @@ import { AuthGuard } from './auth.guard.js';
 import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { updateAuth } from './dtos/updateAuth.js';
 import { tokenResponse } from './dtos/tokenResponse.js';
+import { refreshTokenDTO } from './dtos/refresh-token-dto.js';
 
 
 @ApiTags('auth')
@@ -57,6 +58,10 @@ export class AuthController {
     return this.authService.update(id, updatedData);
   }
 
+  @Post('refresh')
+  async refreshTokens(@Body() refreshTokenDTO: refreshTokenDTO) {
+    return this.authService.refreshTokens(refreshTokenDTO.refreshToken)
+  }
 
 
 }

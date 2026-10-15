@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.service.js';
 import { JwtService } from '@nestjs/jwt';
 import { updateAuth } from './dtos/updateAuth.js';
 import { Prisma } from '@prisma/client';
+import { jwtConstants } from './constants.js';
 
 @Injectable()
 export class AuthService {
@@ -54,13 +55,7 @@ export class AuthService {
       throw new UnauthorizedException('Email ou senha incorretos');
     }
 
-    const accessToken = await this.jwtService.signAsync({
-      id: user.id,
-      name: user.name,
-      email: user.email
-    })
-
-    return { accessToken };
+    return this.generateToken(user.id, user.email)
   }
 
   async delete(id: number) {
@@ -108,6 +103,68 @@ export class AuthService {
 
       throw error
     }
+  }
+
+  async refreshTokens(refreshToken: string) {
+    try {
+      const payload = await this.jwtService.verifyAsync(refreshToken, {
+        secret: jwtConstants.refresh_secret,
+      });
+      const userID = payload.sub
+
+      const userTokens = await this.prismaService.refreshToken.findMany({
+        where: {
+          userId: userID,
+          expiresAT: { gt: new Date() }
+        }
+      })
+
+      let matchedToken = null
+
+      for (const token of userTokens) {
+        const isMatch = await bcrypt.compare(refreshToken, token.hashedToken);
+        if (isMatch) {
+          matchedToken = token;
+          break;
+        }
+      }
+
+      if (!matchedToken) {
+        throw new UnauthorizedException('Invalid or expired token')
+      }
+
+      await this.prismaService.refreshToken.delete({ where: { id: matchedToken.id } })
+
+      return this.generateToken(userID, payload.email)
+
+    } catch (error) {
+      throw new UnauthorizedException('Invalid or expired token')
+    }
+  }
+
+  private async generateToken(userId: number, email: string) {
+      const payload = { sub: userId, email }
+      const accessToken = await this.jwtService.signAsync(payload)
+
+      const refreshToken = await this.jwtService.signAsync(payload, {
+        secret: jwtConstants.refresh_secret,
+        expiresIn: '7d',
+      })
+
+      const hashedToken = await bcrypt.hash(refreshToken, 10);
+
+      const expiresAT = new Date();
+      expiresAT.setDate(expiresAT.getDate() + 7)
+
+      await this.prismaService.refreshToken.create({
+        data: {
+          hashedToken,
+          userId: userId,
+          expiresAT
+        }
+      })
+
+      return { access_token: accessToken, refresh_token: refreshToken };
   }
 
 }
