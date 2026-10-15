@@ -1,4 +1,4 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { VehiclesDTO } from './dtos/vehicles.js';
 import { Prisma } from '@prisma/client';
@@ -36,14 +36,20 @@ export class VehiclesService {
   }
 
   async getOne(id: number, userId: number) {
-    return this.prisma.vehicles.findFirst({
-      where: { id: id, userId: userId },
+    const vehicle = await this.prisma.vehicles.findFirst({
+      where: { id, userId }
     })
+
+    if (!vehicle) {
+      throw new NotFoundException('Veiculo não encontrado ou não pertence a esse usúario')
+    }
   }
 
   async update(id: number, data: any, userId: number) {
     await this.getOne(id, userId)
-
+    if (Object.keys(data).length === 0) {
+      throw new BadRequestException('Os dados para atualização não podem estar vazios')
+    }
     return this.prisma.vehicles.update({
       where: { id: id },
       data,
