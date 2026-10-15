@@ -27,6 +27,35 @@ export class VehiclesService {
       }
       throw error;
   }
-    }
+  }
+
+  async getAll(userId: number) {
+    return this.prisma.vehicles.findMany({
+      where: { userId: userId },
+    });
+  }
+
+  async getOne(id: number, userId: number) {
+    return this.prisma.vehicles.findFirst({
+      where: { id: id, userId: userId },
+    })
+  }
+
+  async update(id: number, data: any, userId: number) {
+    await this.getOne(id, userId)
+
+    return this.prisma.vehicles.update({
+      where: { id: id },
+      data,
+    });
+  }
+
+  async delete(id: number, userId: number) {
+    await this.getOne(id, userId)
+
+    return this.prisma.vehicles.delete({
+      where: {id: id}
+    })
+  }
 
 }

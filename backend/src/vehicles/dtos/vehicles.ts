@@ -82,4 +82,10 @@ export class VehiclesDTO {
   })
   @IsNotEmpty()
   vehicle_type: string;
+
+  @ApiProperty({
+    description: "Foto do veiculo"
+  })
+  @IsOptional()
+  picture?: string;
 }

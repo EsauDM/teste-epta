@@ -6,6 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 import { updateAuth } from './dtos/updateAuth.js';
 import { Prisma } from '@prisma/client';
 import { jwtConstants } from './constants.js';
+import * as crypto from 'crypto'
 
 @Injectable()
 export class AuthService {
@@ -105,6 +106,10 @@ export class AuthService {
     }
   }
 
+  private hashToken(token: string): string {
+    return crypto.createHash('sha256').update(token).digest('hex')
+  }
+
   async refreshTokens(refreshToken: string) {
     try {
       const payload = await this.jwtService.verifyAsync(refreshToken, {
@@ -121,9 +126,11 @@ export class AuthService {
 
       let matchedToken = null
 
+      const incomingHash = this.hashToken(refreshToken)
+
       for (const token of userTokens) {
-        const isMatch = await bcrypt.compare(refreshToken, token.hashedToken);
-        if (isMatch) {
+
+        if (token.hashedToken === incomingHash) {
           matchedToken = token;
           break;
         }
@@ -151,7 +158,7 @@ export class AuthService {
         expiresIn: '7d',
       })
 
-      const hashedToken = await bcrypt.hash(refreshToken, 10);
+      const hashedToken = this.hashToken(refreshToken);
 
       const expiresAT = new Date();
       expiresAT.setDate(expiresAT.getDate() + 7)
