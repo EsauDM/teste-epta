@@ -59,6 +59,14 @@ export class AuthService {
     return this.generateToken(user.id, user.email)
   }
 
+  async logout(userId: number) {
+    await this.prismaService.refreshToken.deleteMany({
+      where: {
+        userId: userId,
+      }
+    })
+  }
+
   async delete(id: number) {
 
     const deletedUser = await this.prismaService.user.delete({

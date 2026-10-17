@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards, Request, Delete, ParseIntPipe, Param, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards, Request, Delete, ParseIntPipe, Param, Patch, HttpCode, HttpStatus } from '@nestjs/common';
 import { SignInDTO, SignUpDTO } from './dtos/auth.js';
 import { AuthService } from './auth.service.js';
 import { AuthGuard } from './auth.guard.js';
@@ -61,6 +61,15 @@ export class AuthController {
   @Post('refresh')
   async refreshTokens(@Body() refreshTokenDTO: refreshTokenDTO) {
     return this.authService.refreshTokens(refreshTokenDTO.refreshToken)
+  }
+
+  @UseGuards(AuthGuard)
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  async logout(@Request() req) {
+    const userId = req.user.id
+
+    return this.authService.logout(userId)
   }
 
 

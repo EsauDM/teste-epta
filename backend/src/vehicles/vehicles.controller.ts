@@ -13,8 +13,16 @@ import { extname } from 'path';
 @Controller('vehicles')
 @UseGuards(AuthGuard)
 export class VehiclesController {
-  constructor(private readonly vehiclesService: VehiclesService) { }
+  constructor(
+    private readonly vehiclesService: VehiclesService
+  ) { }
 
+
+  @Post('extract-crlv')
+  @UseInterceptors(FileInterceptor('file'))
+  async extractCrlv(@UploadedFile() file: Express.Multer.File) {
+    return await this.vehiclesService.extractCrlvData(file.buffer)
+  }
 
   @Post('create')
   @UseInterceptors(FileInterceptor('picture', {

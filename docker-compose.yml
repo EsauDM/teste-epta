@@ -14,5 +14,43 @@ services:
       - pgdata:/var/lib/postgresql/data
     restart: unless-stopped
 
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vehicles_api
+    restart: always
+    ports:
+      - "3000:3000"
+    command: npm run start:dev
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+    env_file:
+      - ./backend/.env
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    environment:
+      - NODE_OPTIONS=--dns-result-order=ipv4first
+      - DATABASE_URL=postgresql://admin-drivo:drivo141225@db:5432/drivo-garage?schema=public
+    depends_on:
+      - db
+
+  studio:
+      build:
+        context: ./backend
+        dockerfile: Dockerfile
+      container_name: prisma_studio
+      ports:
+        - "5555:5555"
+      env_file:
+        - ./backend/.env
+      environment:
+        - DATABASE_URL=postgresql://admin-drivo:drivo141225@db:5432/drivo-garage?schema=public
+      command: npx prisma@5.21.1 studio --port 5555 --hostname 0.0.0.0
+      depends_on:
+        - db
+
 volumes:
   pgdata:
