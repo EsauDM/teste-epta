@@ -34,7 +34,9 @@ export class AuthController {
   @Get('me')
   @ApiOkResponse({ description: 'Authenticated user data', type: tokenResponse })
   async me(@Request() request) {
-    return request.user;
+    const userId = request.user.sub || request.user.id
+
+    return this.authService.getMe(userId)
   }
 
   @Delete(':id')

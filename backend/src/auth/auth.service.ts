@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { SignInDTO, SignUpDTO } from './dtos/auth.js';
 import { PrismaService } from '../prisma/prisma.service.js';
@@ -35,8 +35,28 @@ export class AuthService {
     return {
       id: user.id,
       name: user.name,
-      email: user.email,
+      email: user.email
     };
+  }
+
+  async getMe(userId: number) {
+    const usuario = await this.prismaService.user.findUnique({
+      where: {
+        id: userId
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        createdAT: true,
+      }
+    })
+
+    if (!usuario) {
+      throw new NotFoundException('User not found')
+    }
+
+    return usuario;
   }
 
   async signin(data: SignInDTO) {
@@ -85,14 +105,26 @@ export class AuthService {
   async update(id: number, data: updateAuth) {
     let hashedPassword = undefined;
     if (data.password) {
+      if (!data.currentPassword) {
+        throw new BadRequestException('Para alterar a senha, informe a senha atual.')
+      }
+      const user = await this.prismaService.user.findUnique({ where: { id } })
+
+      const senhaValida = await bcrypt.compare(data.currentPassword, user.password)
+      if (!senhaValida) {
+        throw new UnauthorizedException('A senha atual está incorreta.')
+      }
+
       hashedPassword = await bcrypt.hash(data.password, 10);
     }
 
     try {
+      const { currentPassword, ...dataSalvar } = data
+
       const updatedUser = await this.prismaService.user.update({
         where: { id: id },
         data: {
-          ...data,
+          ...dataSalvar,
           password: hashedPassword,
 
         },

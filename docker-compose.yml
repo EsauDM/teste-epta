@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:15-alpine
@@ -38,19 +36,31 @@ services:
       - db
 
   studio:
-      build:
-        context: ./backend
-        dockerfile: Dockerfile
-      container_name: prisma_studio
-      ports:
-        - "5555:5555"
-      env_file:
-        - ./backend/.env
-      environment:
-        - DATABASE_URL=postgresql://admin-drivo:drivo141225@db:5432/drivo-garage?schema=public
-      command: npx prisma@5.21.1 studio --port 5555 --hostname 0.0.0.0
-      depends_on:
-        - db
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: prisma_studio
+    ports:
+      - "5555:5555"
+    env_file:
+      - ./backend/.env
+    environment:
+      - DATABASE_URL=postgresql://admin-drivo:drivo141225@db:5432/drivo-garage?schema=public
+    command: npx prisma@5.21.1 studio --port 5555 --hostname 0.0.0.0
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontend/drivo-garage
+      dockerfile: Dockerfile
+    container_name: drivo-frontend
+    ports:
+      - "3001:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:3000
+    depends_on:
+      - api
 
 volumes:
   pgdata:
