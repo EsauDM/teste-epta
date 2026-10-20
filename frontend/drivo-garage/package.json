@@ -1,0 +1,33 @@
+{
+  "name": "drivo-garage",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "format": "turbo format",
+    "typecheck": "turbo typecheck"
+  },
+  "devDependencies": {
+    "@workspace/eslint-config": "*",
+    "@workspace/typescript-config": "*",
+    "prettier": "^3.9.10",
+    "prettier-plugin-tailwindcss": "^0.8.1",
+    "turbo": "^2.11.7",
+    "typescript": "^5"
+  },
+  "packageManager": "npm@11.17.0",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "dependencies": {
+    "axios": "^1.20.0",
+    "framer-motion": "^14.3.0",
+    "lucide-react": "^1.59.0"
+  }
+}
