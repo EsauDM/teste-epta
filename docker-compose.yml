@@ -20,7 +20,7 @@ services:
     restart: always
     ports:
       - "3000:3000"
-    command: npm run start:dev
+    command: sh -c "npx prisma migrate deploy && npx prisma db push && npm run start:dev"
     volumes:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
